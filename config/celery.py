@@ -24,6 +24,10 @@ app.conf.beat_schedule = {
         "task": "listings.tasks.close_expired_listings",
         "schedule": 60.0,  # every 60 seconds
     },
+    "release-eligible-payouts": {
+        "task": "payments.tasks.release_eligible_payouts",
+        "schedule": 900.0,  # every 15 minutes
+    },
 }
 
 
