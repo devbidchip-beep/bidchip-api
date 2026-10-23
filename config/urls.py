@@ -27,4 +27,6 @@ urlpatterns = [
     ),
     # Application APIs
     path("api/v1/accounts/", include("accounts.urls")),
+    path("api/v1/catalog/", include("catalog.urls")),
+    path("api/v1/listings/", include("listings.urls")),
 ]

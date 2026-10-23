@@ -19,6 +19,14 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 
+app.conf.beat_schedule = {
+    "close-expired-listings": {
+        "task": "listings.tasks.close_expired_listings",
+        "schedule": 60.0,  # every 60 seconds
+    },
+}
+
+
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")
