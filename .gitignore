@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Django
+*.sqlite3
+*.sqlite3-journal
+media/
+staticfiles/
+local_settings.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# Docker
+*.log
+
+# Migrations (keep __init__.py, ignore generated migrations for dev flexibility)
+# Uncomment below to ignore all migrations except __init__:
+# */migrations/*.py
+# !*/migrations/__init__.py

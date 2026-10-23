@@ -1,0 +1,6 @@
+-r base.txt
+pytest-django
+pytest-cov
+ruff
+factory-boy
+Faker
