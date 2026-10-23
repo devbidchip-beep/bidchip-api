@@ -57,23 +57,49 @@ def close_expired_listings():
             listing.closed_at = now
             listing.save(update_fields=["status", "closed_at", "updated_at"])
 
-            # Phase 3: winner selection and Order creation placeholder
-            if listing.kind in (Listing.Kind.REVERSE, Listing.Kind.BOM):
-                # TODO (Phase 3): query bids for each line, pick lowest price /
-                # exact-match winner, create Order stubs.
-                logger.info(
-                    "close_expired_listings: listing %s closed — bid award pending Phase 3",
-                    listing.number,
-                )
-            else:
-                logger.info(
-                    "close_expired_listings: listing %s closed (kind=%s)",
-                    listing.number,
-                    listing.kind,
-                )
+            any_awarded = False
 
-            # TODO (Phase 2/3): send notification to buyer_company and invited suppliers
+            if listing.kind in (Listing.Kind.REVERSE, Listing.Kind.BOM, Listing.Kind.RFQ):
+                from bidding.services import auto_award_line
+                from notify.service import notify
+
+                for line in listing.lines.filter(status="open"):
+                    try:
+                        awards = auto_award_line(line)
+                    except Exception as exc:
+                        logger.exception(
+                            "close_expired_listings: auto_award_line failed for line %s: %s",
+                            line.pk,
+                            exc,
+                        )
+                        awards = []
+
+                    if awards:
+                        any_awarded = True
+                        notify(
+                            listing.created_by,
+                            "listing_awarded",
+                            {"listing_number": listing.number},
+                        )
+                        for award in awards:
+                            notify(
+                                award.bid.placed_by,
+                                "listing_awarded",
+                                {"listing_number": listing.number},
+                            )
+                    else:
+                        notify(
+                            listing.created_by,
+                            "listing_closed",
+                            {"listing_number": listing.number},
+                        )
+
+            if any_awarded:
+                listing.status = Listing.Status.AWARDED
+                listing.save(update_fields=["status", "updated_at"])
+
             logger.info(
-                "close_expired_listings: [NOTIFY PLACEHOLDER] listing %s closed",
+                "close_expired_listings: listing %s finalized with status=%s",
                 listing.number,
+                listing.status,
             )

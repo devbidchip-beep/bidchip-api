@@ -1,0 +1,98 @@
+[
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0001-4000-8000-000000000001",
+    "fields": {
+      "key": "bid_placed",
+      "subject": "New bid on your listing",
+      "body_html": "<p>A new bid has been placed on your listing <strong>{listing_number}</strong>.</p>",
+      "body_text": "A new bid has been placed on your listing {listing_number}.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0002-4000-8000-000000000002",
+    "fields": {
+      "key": "outbid",
+      "subject": "You have been outbid",
+      "body_html": "<p>You have been outbid on listing <strong>{listing_number}</strong>. Place a new bid to stay competitive.</p>",
+      "body_text": "You have been outbid on listing {listing_number}. Place a new bid to stay competitive.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0003-4000-8000-000000000003",
+    "fields": {
+      "key": "listing_closed",
+      "subject": "Your listing has closed",
+      "body_html": "<p>Your listing <strong>{listing_number}</strong> has closed.</p>",
+      "body_text": "Your listing {listing_number} has closed.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0004-4000-8000-000000000004",
+    "fields": {
+      "key": "listing_awarded",
+      "subject": "You won a bid",
+      "body_html": "<p>Congratulations! You won a bid on listing <strong>{listing_number}</strong>.</p>",
+      "body_text": "Congratulations! You won a bid on listing {listing_number}.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0005-4000-8000-000000000005",
+    "fields": {
+      "key": "new_listing_match",
+      "subject": "New listing matches your inventory",
+      "body_html": "<p>A new listing <strong>{listing_number}</strong> matches your inventory. View it now.</p>",
+      "body_text": "A new listing {listing_number} matches your inventory. View it now.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0006-4000-8000-000000000006",
+    "fields": {
+      "key": "payment_received",
+      "subject": "Payment received \u2014 please ship your order",
+      "body_html": "<p>Payment has been received for order <strong>{order_number}</strong>. Please ship your items.</p>",
+      "body_text": "Payment has been received for order {order_number}. Please ship your items.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0007-4000-8000-000000000007",
+    "fields": {
+      "key": "shipment_received",
+      "subject": "Shipment received at warehouse",
+      "body_html": "<p>Your shipment for order <strong>{order_number}</strong> has been received at our warehouse.</p>",
+      "body_text": "Your shipment for order {order_number} has been received at our warehouse.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0008-4000-8000-000000000008",
+    "fields": {
+      "key": "delivered_payout_in_5_days",
+      "subject": "Your order was delivered \u2014 payout in 5 business days",
+      "body_html": "<p>Your order <strong>{order_number}</strong> was delivered. Your payout will arrive within 5 business days.</p>",
+      "body_text": "Your order {order_number} was delivered. Your payout will arrive within 5 business days.",
+      "version": 1,
+      "is_active": true
+    }
+  }
+]
