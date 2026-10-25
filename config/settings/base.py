@@ -66,6 +66,7 @@ LOCAL_APPS = [
     "payments",
     "logistics",
     "trust",
+    "intake",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -237,3 +238,10 @@ FEDEX_CLIENT_ID = config("FEDEX_CLIENT_ID", default="")
 FEDEX_CLIENT_SECRET = config("FEDEX_CLIENT_SECRET", default="")
 FEDEX_ACCOUNT_NUMBER = config("FEDEX_ACCOUNT_NUMBER", default="")
 FEDEX_WEBHOOK_SECRET = config("FEDEX_WEBHOOK_SECRET", default="")
+
+# ---------------------------------------------------------------------------
+# Anthropic / AI Intake
+# ---------------------------------------------------------------------------
+ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
+INTAKE_ALLOWED_EXTENSIONS = ["xlsx", "xls", "csv", "pdf", "docx", "jpg", "jpeg", "png"]
+INTAKE_MAX_FILE_SIZE_MB = 10

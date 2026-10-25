@@ -32,6 +32,10 @@ app.conf.beat_schedule = {
         "task": "logistics.tasks.poll_tracking_updates",
         "schedule": 1800.0,  # every 30 minutes
     },
+    "match-new-listings": {
+        "task": "catalog.tasks.match_new_listings_to_inventory",
+        "schedule": 120.0,  # every 2 minutes
+    },
 }
 
 

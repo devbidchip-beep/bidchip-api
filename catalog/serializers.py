@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import InventoryItem, Manufacturer, Part
+from .models import InventoryImport, InventoryItem, Manufacturer, Part
 
 
 class ManufacturerSerializer(serializers.ModelSerializer):
@@ -77,3 +77,27 @@ class InventoryItemSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
+
+
+class InventoryImportSerializer(serializers.ModelSerializer):
+    error_report_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InventoryImport
+        fields = [
+            "id",
+            "status",
+            "rows_total",
+            "rows_ok",
+            "rows_failed",
+            "error_report_url",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+    def get_error_report_url(self, obj):
+        if not obj.error_report:
+            return None
+        # Return the S3 key — callers can generate a presigned URL as needed
+        return obj.error_report

@@ -19,3 +19,7 @@ gunicorn
 sentry-sdk[django]
 cryptography
 Pillow
+anthropic>=0.40.0
+openpyxl>=3.1
+pandas>=2.0
+pdfplumber>=0.11
