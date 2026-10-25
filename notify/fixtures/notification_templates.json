@@ -94,5 +94,41 @@
       "version": 1,
       "is_active": true
     }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0009-4000-8000-000000000009",
+    "fields": {
+      "key": "corporate_invitation",
+      "subject": "You've been invited to join {company_name} on BidChip",
+      "body_html": "<p>You have been invited to join <strong>{company_name}</strong> on BidChip as a <strong>{role}</strong>. Use the token provided to accept your invitation.</p>",
+      "body_text": "You have been invited to join {company_name} on BidChip as a {role}. Use the token provided to accept your invitation.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0010-4000-8000-000000000010",
+    "fields": {
+      "key": "approval_requested",
+      "subject": "Approval requested: {subject_type} by {member_name}",
+      "body_html": "<p>An approval request has been submitted by <strong>{member_name}</strong> for <strong>{subject_type}</strong>.</p>",
+      "body_text": "An approval request has been submitted by {member_name} for {subject_type}.",
+      "version": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "notify.notificationtemplate",
+    "pk": "11111111-0011-4000-8000-000000000011",
+    "fields": {
+      "key": "approval_decided",
+      "subject": "Your approval request has been {status}",
+      "body_html": "<p>Your approval request for <strong>{subject_type}</strong> has been <strong>{status}</strong> by {approver_name}.</p>",
+      "body_text": "Your approval request for {subject_type} has been {status} by {approver_name}.",
+      "version": 1,
+      "is_active": true
+    }
   }
 ]

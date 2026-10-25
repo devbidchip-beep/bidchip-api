@@ -126,6 +126,19 @@ class ListingPublishView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Corporate listing-publish approval check
+        member = request.user.memberships.filter(
+            company=listing.buyer_company, status="active"
+        ).first()
+        if member is not None:
+            from corporate.checks import validate_listing_publish
+            from rest_framework.exceptions import ValidationError as DRFValidationError
+
+            try:
+                validate_listing_publish(listing, member)
+            except DRFValidationError as exc:
+                return Response({"error": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = ListingPublishSerializer(
             listing, data=request.data, partial=True, context={"request": request}
         )

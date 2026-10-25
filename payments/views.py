@@ -37,6 +37,7 @@ class CheckoutView(APIView):
         from orders.service import create_order_from_awards
         from payments.models import Payment
         from pricing.service import price_order
+        from rest_framework.exceptions import ValidationError as DRFValidationError
 
         data = request.data
         listing_id = data.get("listing_id")
@@ -66,6 +67,22 @@ class CheckoutView(APIView):
             ship_to = Address.objects.get(id=ship_to_id, company=listing.buyer_company)
         except Address.DoesNotExist:
             return Response({"error": "Address not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Corporate budget / limit / ship-to validation (fail-closed)
+        member = request.user.memberships.filter(
+            company=listing.buyer_company, status="active"
+        ).first()
+        if member is not None:
+            from corporate.checks import validate_checkout
+
+            order_data_for_check = {
+                "grand_total": str(data.get("grand_total", "0.00")),
+                "ship_to_id": ship_to_id,
+            }
+            try:
+                validate_checkout(order_data_for_check, member)
+            except DRFValidationError as exc:
+                return Response({"error": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create order (all server-side pricing)
         order = create_order_from_awards(
