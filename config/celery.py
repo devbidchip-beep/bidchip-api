@@ -28,6 +28,10 @@ app.conf.beat_schedule = {
         "task": "payments.tasks.release_eligible_payouts",
         "schedule": 900.0,  # every 15 minutes
     },
+    "poll-tracking-updates": {
+        "task": "logistics.tasks.poll_tracking_updates",
+        "schedule": 1800.0,  # every 30 minutes
+    },
 }
 
 

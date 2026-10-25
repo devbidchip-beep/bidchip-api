@@ -64,6 +64,7 @@ LOCAL_APPS = [
     "pricing",
     "orders",
     "payments",
+    "logistics",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -222,3 +223,16 @@ STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
 # NOTE: In production set FIELD_ENCRYPTION_KEY to a base64-encoded 32-byte key
 # generated with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
+
+# ---------------------------------------------------------------------------
+# Carrier credentials
+# ---------------------------------------------------------------------------
+UPS_CLIENT_ID = config("UPS_CLIENT_ID", default="")
+UPS_CLIENT_SECRET = config("UPS_CLIENT_SECRET", default="")
+UPS_ACCOUNT_NUMBER = config("UPS_ACCOUNT_NUMBER", default="")
+UPS_WEBHOOK_TOKEN = config("UPS_WEBHOOK_TOKEN", default="")
+
+FEDEX_CLIENT_ID = config("FEDEX_CLIENT_ID", default="")
+FEDEX_CLIENT_SECRET = config("FEDEX_CLIENT_SECRET", default="")
+FEDEX_ACCOUNT_NUMBER = config("FEDEX_ACCOUNT_NUMBER", default="")
+FEDEX_WEBHOOK_SECRET = config("FEDEX_WEBHOOK_SECRET", default="")
