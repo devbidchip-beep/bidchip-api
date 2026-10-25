@@ -159,6 +159,14 @@ def create_order_from_awards(
             ems_link=ems_link,
         )
 
+        # Assess risk and update supplier_order fields from assessment
+        try:
+            from trust.services import assess_risk
+            assessment = assess_risk(supplier_order)
+            # risk_tier, hold_days, requires_manual_release already saved by assess_risk()
+        except Exception:
+            pass  # Risk assessment must not break order creation
+
         # 5. Create OrderLines
         for award in sup_awards:
             line_total = (
