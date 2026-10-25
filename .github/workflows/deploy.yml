@@ -1,0 +1,193 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Test — must pass before any deployment
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test (pytest)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: bidchip_test
+          POSTGRES_USER: bidchip
+          POSTGRES_PASSWORD: bidchip
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dev dependencies
+        run: pip install -r requirements/dev.txt
+
+      - name: Run pytest
+        run: pytest --tb=short
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          DATABASE_URL: postgres://bidchip:bidchip@localhost:5432/bidchip_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+
+  # ---------------------------------------------------------------------------
+  # Build & push Docker image to ECR
+  # ---------------------------------------------------------------------------
+  build-and-push:
+    name: Build & Push to ECR
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f Dockerfile.prod -t $ECR_REGISTRY/bidchip-api:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/bidchip-api:$IMAGE_TAG
+          # Also tag as latest for convenience
+          docker tag $ECR_REGISTRY/bidchip-api:$IMAGE_TAG $ECR_REGISTRY/bidchip-api:latest
+          docker push $ECR_REGISTRY/bidchip-api:latest
+          echo "image=$ECR_REGISTRY/bidchip-api:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  # ---------------------------------------------------------------------------
+  # Deploy to staging
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to ECS staging
+        run: |
+          aws ecs update-service \
+            --cluster bidchip-staging \
+            --service bidchip-api \
+            --force-new-deployment \
+            --region us-east-1
+
+      - name: Wait for staging deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster bidchip-staging \
+            --services bidchip-api \
+            --region us-east-1
+
+      - name: Run migrations on staging
+        run: |
+          aws ecs run-task \
+            --cluster bidchip-staging \
+            --task-definition bidchip-migrate \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.SUBNET_ID }}],securityGroups=[${{ secrets.SECURITY_GROUP_ID }}],assignPublicIp=DISABLED}" \
+            --overrides '{"containerOverrides":[{"name":"bidchip-api","command":["python","manage.py","migrate","--no-input"]}]}'
+
+      - name: Health check staging
+        run: |
+          sleep 30
+          curl -f https://api-staging.bidchip.com/health/ || exit 1
+
+  # ---------------------------------------------------------------------------
+  # Deploy to production (requires manual approval via GitHub Environments)
+  # ---------------------------------------------------------------------------
+  deploy-prod:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production  # requires manual approval in GitHub Settings → Environments
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to ECS production
+        run: |
+          aws ecs update-service \
+            --cluster bidchip-prod \
+            --service bidchip-api \
+            --force-new-deployment \
+            --region us-east-1
+
+      - name: Wait for production deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster bidchip-prod \
+            --services bidchip-api \
+            --region us-east-1
+
+      - name: Run migrations on production
+        run: |
+          aws ecs run-task \
+            --cluster bidchip-prod \
+            --task-definition bidchip-migrate \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.PROD_SUBNET_ID }}],securityGroups=[${{ secrets.PROD_SECURITY_GROUP_ID }}],assignPublicIp=DISABLED}" \
+            --overrides '{"containerOverrides":[{"name":"bidchip-api","command":["python","manage.py","migrate","--no-input"]}]}'
+
+      - name: Health check production
+        run: |
+          sleep 30
+          curl -f https://api.bidchip.com/health/ || exit 1

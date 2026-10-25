@@ -10,7 +10,11 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from core.views import health_check
+
 urlpatterns = [
+    # Health check (used by ALB / ECS)
+    path("health/", health_check),
     # Django admin
     path("admin/", admin.site.urls),
     # OpenAPI schema + docs
